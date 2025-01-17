@@ -9,7 +9,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
-import { db, auth, ref, set, get, update, remove, runTransaction, universalDataFunction, getDataFromNode } from './serverConfigFb.js';
+import { db, auth, ref, set, get, update, remove, runTransaction, universalDataFunction, getDataFromNode, generateRandomAlphanumeric, generateCurrentTime } from './serverConfigFb.js';
 
 dotenv.config();
 
@@ -107,6 +107,41 @@ app.post(WEBHOOK_PATH, (req, res) => {
                     }
 
                     const transactionData = await updateTransaction();
+                    const storeOwner = await getDataFromNode(`Stores/${transactionData.Id_Toko}/UserId`);
+
+                    const notifId = generateRandomAlphanumeric();
+                    await universalDataFunction("update", `Accounts/${storeOwner}/Notifications/${notifId}`,
+                        [
+                            `id`,
+                            `isRead`,
+                            `message`,
+                            `timestamp`,
+                            `type`
+                        ],
+                        [
+                            notifId,
+                            false,
+                            `${await getDataFromNode(`Accounts/${transactionData.Id_User}/Username`)} telah melakukan pembayaran pada produk ${transactionData.Id_Produk} | id order : ${transactionData.Id_Transaksi}`,
+                            generateCurrentTime(),
+                            'transaction'
+                        ]
+                    );
+                    await universalDataFunction("update", `Accounts/${transactionData.Id_User}/Notifications/${notifId}`,
+                        [
+                            `id`,
+                            `isRead`,
+                            `message`,
+                            `timestamp`,
+                            `type`
+                        ],
+                        [
+                            notifId,
+                            false,
+                            `Pembayaran Berhasil. id Produk : ${transactionData.Nama_Produk} | id order : ${transactionData.Id_Transaksi}`,
+                            generateCurrentTime(),
+                            'order'
+                        ]
+                    );
 
                     const dataDashboard = await getDataFromNode(`Stores/${transactionData.Id_Toko}/dashboard`);
                     const newDashboardData = {

@@ -89,4 +89,22 @@ function universalDataFunction(operation, model, fields, data) {
 
 const getDataFromNode = async (pathh) => (await get(ref(db, pathh))).val();
 
-export { app, db, auth, ref, set, get,  update, remove, runTransaction, specifiedTakeData, universalDataFunction, getDataFromNode };
+function generateRandomAlphanumeric(length = 10) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+function generateCurrentTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return `${day}-${month}-${year}`;
+}
+
+export { app, db, auth, ref, set, get,  update, remove, runTransaction, specifiedTakeData, universalDataFunction, getDataFromNode, generateRandomAlphanumeric, generateCurrentTime };
